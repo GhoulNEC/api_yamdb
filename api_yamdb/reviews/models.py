@@ -139,7 +139,7 @@ class Review(CreatedModel):
         return super().save(*args, **kwargs)
 
 
-class Comments(CreatedModel):
+class Comment(CreatedModel):
     """Создается модель с комментариями."""
     text = models.TextField('Комментарий',
                             help_text='Введите комментарий'
