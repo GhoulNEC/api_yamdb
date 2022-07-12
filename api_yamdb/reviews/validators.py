@@ -6,7 +6,8 @@ def year_validation(year):
     """Валидация года произведения"""
     if year > datetime.datetime.now().year:
         raise ValidationError('Год не может быть больше текущего!')
-        
+
+
 def validate_score(score):
     """Валидатор поля для оценки"""
     if score < 1 or score > 10:
