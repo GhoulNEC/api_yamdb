@@ -16,7 +16,7 @@ class Review(CreatedModel):
     """Создается модель с отзывами."""
     text = models.TextField('Отзыв',
                             help_text='Введите текст отзывы')
-    score = models.ImageField('Оценка',
+    score = models.IntegerField('Оценка',
                               validators=[validate_score],
                               help_text='Введите оценку от 1 до 10')
     author = models.ForeignKey('User',
