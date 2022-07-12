@@ -4,8 +4,8 @@ from .validators import year_validation
 
 
 class Categories(models.Model):
-    name = models.CharField('Категория', max_length=120)
-    slug = models.SlugField(max_length=30, unique=True)
+    name = models.CharField('Категория', max_length=120, db_index=True)
+    slug = models.SlugField(max_length=30, unique=True, db_index=True)
 
     class Meta:
         ordering = ('pk',)
@@ -17,8 +17,8 @@ class Categories(models.Model):
 
 
 class Genres(models.Model):
-    name = models.CharField('Жанр', max_length=150)
-    slug = models.SlugField(max_length=30, unique=True)
+    name = models.CharField('Жанр', max_length=150, db_index=True)
+    slug = models.SlugField(max_length=30, unique=True, db_index=True)
 
     class Meta:
         ordering = ('pk',)
@@ -30,11 +30,13 @@ class Genres(models.Model):
 
 
 class Titles(models.Model):
-    name = models.TextField('Название произведения', max_length=150)
+    name = models.TextField('Название произведения', max_length=150,
+                            db_index=True)
     year = models.IntegerField('Год выхода произведения',
                                validators=[year_validation], blank=True)
     description = models.TextField('Описание', max_length=300)
-    genre = models.ManyToManyField(Genres, blank=True, related_name='titles')
+    genre = models.ManyToManyField(Genres, blank=True, related_name='titles',
+                                   through='TitlesGenres')
     category = models.ForeignKey(Categories, on_delete=models.SET_NULL,
                                  blank=True, null=True, related_name='titles')
 
