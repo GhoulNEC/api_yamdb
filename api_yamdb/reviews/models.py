@@ -1,16 +1,56 @@
-from django.core.exceptions import ValidationError
-from django.db import models
 from core.models import CreatedModel
+from django.db import models
+
+from .validators import year_validation, validate_score
+
+User = get_user_model()
 
 
-def validate_score(score):
-    """Валидатор поля для оценки"""
-    if score < 1 or score > 10:
-        raise ValidationError(f'Оценка может быть от 1 до 10!',
-                              code='false range',
-                              params={'score': score}
-                              )
+class Categories(models.Model):
+    name = models.CharField('Категория', max_length=120, db_index=True)
+    slug = models.SlugField(max_length=30, unique=True, db_index=True)
 
+    class Meta:
+        ordering = ('pk',)
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+    def __str__(self):
+        return self.name
+
+
+class Genres(models.Model):
+    name = models.CharField('Жанр', max_length=150, db_index=True)
+    slug = models.SlugField(max_length=30, unique=True, db_index=True)
+
+    class Meta:
+        ordering = ('pk',)
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self):
+        return self.name
+      
+      
+class Titles(models.Model):
+    name = models.TextField('Название произведения', max_length=150,
+                            db_index=True)
+    year = models.IntegerField('Год выхода произведения',
+                               validators=[year_validation], blank=True)
+    description = models.TextField('Описание', max_length=300)
+    genre = models.ManyToManyField(Genres, blank=True, related_name='titles',
+                                   through='TitlesGenres')
+    category = models.ForeignKey(Categories, on_delete=models.SET_NULL,
+                                 blank=True, null=True, related_name='titles')
+
+    class Meta:
+        ordering = ('pk',)
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
+    def __str__(self):
+        return self.name
+      
 
 class Review(CreatedModel):
     """Создается модель с отзывами."""
@@ -24,7 +64,7 @@ class Review(CreatedModel):
                                on_delete=models.CASCADE,
                                verbose_name='Автор'
                                )
-    titles = models.ForeignKey('Titles',
+    titles = models.ForeignKey(Titles,
                                related_name='titles',
                                on_delete=models.CASCADE,
                                verbose_name='Произведение'
@@ -56,7 +96,7 @@ class Comments(CreatedModel):
     text = models.TextField('Комментарий',
                             help_text='Введите комментарий'
                             )
-    author = models.ForeignKey('User',
+    author = models.ForeignKey(User,
                                related_name='author',
                                on_delete=models.CASCADE,
                                verbose_name='Автор'
@@ -76,4 +116,3 @@ class Comments(CreatedModel):
         return 'Отзыв к {0}: {1}'.format(
             self.review.pk, self.text
         )
-
