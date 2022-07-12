@@ -1,3 +1,6 @@
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+
 from core.models import CreatedModel
 from django.db import models
 
@@ -7,8 +10,14 @@ User = get_user_model()
 
 
 class Categories(models.Model):
-    name = models.CharField('Категория', max_length=120, db_index=True)
-    slug = models.SlugField(max_length=30, unique=True, db_index=True)
+    name = models.CharField('Категория',
+                            max_length=120,
+                            db_index=True
+                            )
+    slug = models.SlugField(max_length=30,
+                            unique=True,
+                            db_index=True
+                            )
 
     class Meta:
         ordering = ('pk',)
@@ -20,8 +29,14 @@ class Categories(models.Model):
 
 
 class Genres(models.Model):
-    name = models.CharField('Жанр', max_length=150, db_index=True)
-    slug = models.SlugField(max_length=30, unique=True, db_index=True)
+    name = models.CharField('Жанр',
+                            max_length=150,
+                            db_index=True
+                            )
+    slug = models.SlugField(max_length=30,
+                            unique=True,
+                            db_index=True
+                            )
 
     class Meta:
         ordering = ('pk',)
@@ -30,18 +45,30 @@ class Genres(models.Model):
 
     def __str__(self):
         return self.name
-      
-      
+
+
 class Titles(models.Model):
-    name = models.TextField('Название произведения', max_length=150,
-                            db_index=True)
+    name = models.TextField('Название произведения',
+                            max_length=150,
+                            db_index=True
+                            )
     year = models.IntegerField('Год выхода произведения',
-                               validators=[year_validation], blank=True)
-    description = models.TextField('Описание', max_length=300)
-    genre = models.ManyToManyField(Genres, blank=True, related_name='titles',
-                                   through='TitlesGenres')
-    category = models.ForeignKey(Categories, on_delete=models.SET_NULL,
-                                 blank=True, null=True, related_name='titles')
+                               validators=[year_validation],
+                               blank=True)
+    description = models.TextField('Описание',
+                                   max_length=300
+                                   )
+    genre = models.ManyToManyField(Genres,
+                                   related_name='titles',
+                                   through='TitlesGenres',
+                                   blank=True
+                                   )
+    category = models.ForeignKey(Categories,
+                                 on_delete=models.SET_NULL,
+                                 related_name='titles',
+                                 blank=True,
+                                 null=True
+                                 )
 
     class Meta:
         ordering = ('pk',)
@@ -50,29 +77,36 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name
-    
-    
+
+
 class TitlesGenres(models.Model):
-    title = models.ForeignKey(Titles, on_delete=models.CASCADE,
-                              related_name='genres')
-    genre = models.ForeignKey(Genres, on_delete=models.SET_NULL, null=True,
-                              related_name='titles'
+    title = models.ForeignKey(Titles,
+                              related_name='genres',
+                              on_delete=models.CASCADE
+                              )
+    genre = models.ForeignKey(Genres,
+                              related_name='titles',
+                              on_delete=models.SET_NULL,
+                              null=True,
+                              )
 
     class Meta:
         verbose_name = 'Жанр произведения'
         verbose_name_plural = 'Жанры произведений'
-    
+
     def __str__(self):
-        return f'{title} - {genre}'
-      
+        return f'{self.title} - {self.genre}'
+
 
 class Review(CreatedModel):
     """Создается модель с отзывами."""
     text = models.TextField('Отзыв',
-                            help_text='Введите текст отзывы')
+                            help_text='Введите текст отзывы'
+                            )
     score = models.IntegerField('Оценка',
-                              validators=[validate_score],
-                              help_text='Введите оценку от 1 до 10')
+                                validators=[validate_score],
+                                help_text='Введите оценку от 1 до 10'
+                                )
     author = models.ForeignKey(User,
                                related_name='author',
                                on_delete=models.CASCADE,
@@ -98,7 +132,8 @@ class Review(CreatedModel):
         """Проверка пользователя на наличие отзыва."""
         if self.objects.filter(author=kwargs['author'],
                                titles=kwargs['titles']).exists():
-            raise ValidationError('К сожалению, можно оставить только один отзыв',
+            raise ValidationError('''К сожалению, можно оставить
+                                    только один отзыв''',
                                   code='review error',
                                   params={'author': kwargs['author']}
                                   )
