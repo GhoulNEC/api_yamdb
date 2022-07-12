@@ -59,7 +59,6 @@ class Titles(models.Model):
                                    max_length=300
                                    )
     genre = models.ManyToManyField(Genres,
-                                   related_name='titles',
                                    through='TitlesGenres',
                                    blank=True
                                    )
@@ -85,7 +84,7 @@ class TitlesGenres(models.Model):
                               on_delete=models.CASCADE
                               )
     genre = models.ForeignKey(Genres,
-                              related_name='titles',
+                              related_name='title',
                               on_delete=models.SET_NULL,
                               null=True,
                               )
@@ -108,7 +107,7 @@ class Review(CreatedModel):
                                 help_text='Введите оценку от 1 до 10'
                                 )
     author = models.ForeignKey(User,
-                               related_name='author',
+                               related_name='reviews',
                                on_delete=models.CASCADE,
                                verbose_name='Автор'
                                )
@@ -146,7 +145,7 @@ class Comments(CreatedModel):
                             help_text='Введите комментарий'
                             )
     author = models.ForeignKey(User,
-                               related_name='author',
+                               related_name='comments',
                                on_delete=models.CASCADE,
                                verbose_name='Автор'
                                )
