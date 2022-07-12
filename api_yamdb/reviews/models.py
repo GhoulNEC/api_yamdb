@@ -50,6 +50,20 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
+class TitlesGenres(models.Model):
+    title = models.ForeignKey(Titles, on_delete=models.CASCADE,
+                              related_name='genres')
+    genre = models.ForeignKey(Genres, on_delete=models.SET_NULL, null=True,
+                              related_name='titles'
+
+    class Meta:
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведений'
+    
+    def __str__(self):
+        return f'{title} - {genre}'
       
 
 class Review(CreatedModel):
@@ -59,7 +73,7 @@ class Review(CreatedModel):
     score = models.IntegerField('Оценка',
                               validators=[validate_score],
                               help_text='Введите оценку от 1 до 10')
-    author = models.ForeignKey('User',
+    author = models.ForeignKey(User,
                                related_name='author',
                                on_delete=models.CASCADE,
                                verbose_name='Автор'
