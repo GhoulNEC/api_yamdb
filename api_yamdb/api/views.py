@@ -26,16 +26,15 @@ from .permissions import (
 )
 from .serializers import (
     CategoriesSerializer,
-    CommentsSerializer,
     GenresSerializer,
-    ReviewSerializers,
     SignUpSerializer,
     TitlesReadOnlySerializer,
     TitlesCreateSerializer,
     TokenSerializer,
     UserSerializer,
     MeSerializer,
-    CommentSerializers
+    ReviewSerializers,
+    CommentSerializers,
 )
 
 
