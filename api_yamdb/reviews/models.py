@@ -60,7 +60,8 @@ class Title(models.Model):
                                    max_length=300
                                    )
     genre = models.ManyToManyField(Genre,
-                                   through='TitlesGenre',
+                                   related_name='genre',
+                                   through='TitleGenre',
                                    blank=True
                                    )
     category = models.ForeignKey(Category,

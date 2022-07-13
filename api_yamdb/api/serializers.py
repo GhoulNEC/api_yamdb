@@ -5,7 +5,7 @@ from reviews.models import (
     Genre,
     Title,
     Review,
-    Comment
+    Comment, User
 )
 
 
@@ -56,3 +56,15 @@ class CommentSerializers(serializers.ModelSerializer):
     class Meta:
         model = Comment
         exclude = ('review',)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'bio',
+                  'role'
+                  )
