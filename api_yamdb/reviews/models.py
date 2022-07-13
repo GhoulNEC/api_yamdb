@@ -1,9 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-
-from core.models import CreatedModel
 from django.db import models
 
+from core.models import CreatedModel
 from .validators import year_validation, validate_score
 
 User = get_user_model()
