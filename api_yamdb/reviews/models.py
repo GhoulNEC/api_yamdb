@@ -7,7 +7,7 @@ from .validators import year_validation, validate_score
 User = get_user_model()
 
 
-class Categorie(models.Model):
+class Category(models.Model):
     """Создается модель категорий."""
     name = models.CharField('Категория',
                             max_length=120,
@@ -79,7 +79,7 @@ class Title(models.Model):
         return self.name
 
 
-class TitlesGenre(models.Model):
+class TitleGenre(models.Model):
     """Смежная модель для жанров и произведений."""
     title = models.ForeignKey(Title,
                               related_name='genres',
