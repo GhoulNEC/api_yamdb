@@ -7,7 +7,6 @@ from reviews.models import (
     Review,
     Comment
 )
-from users.models import User
 
 
 class SignUpSerializer(serializers.ModelSerializer):
