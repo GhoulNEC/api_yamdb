@@ -7,6 +7,27 @@ from reviews.models import (
     Review,
     Comment
 )
+from users.models import User
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=100, required=True)
+    email = serializers.EmailField(max_length=100, required=True)
+
+    def validate(self, data):
+        if data['username'] == 'me':
+            raise serializers.ValidationError('Недопустимый логин: "me"')
+        return data
+
+    class Meta:
+        fields = ('username', 'email')
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio',
+                  'role')
 
 
 class CategorySerializer(serializers.ModelSerializer):
