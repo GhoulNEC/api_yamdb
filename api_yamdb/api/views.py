@@ -6,8 +6,6 @@ from django.db.models import Avg
 from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.pagination import (PageNumberPagination,
-                                       LimitOffsetPagination)
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view, action
 from rest_framework.permissions import (IsAuthenticated,
@@ -134,7 +132,6 @@ class GenreViewSet(ListCreateDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
