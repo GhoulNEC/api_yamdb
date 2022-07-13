@@ -5,7 +5,7 @@ from api.views import (
     CategoriesViewSet,
     CommentViewSet,
     GenresViewSet,
-    ReviewViewSet,
+    ReviewViewSet, TitleViewSet,
     TitlesViewSet,
     UserViewSet,
     signup_post,
@@ -24,7 +24,6 @@ router.register(
     ReviewViewSet,
     basename='reviews'
 )
-
 router.register(
     r'titles/(?P<title_id>[\d]+)/reviews/(?P<review_id>[\d]+)/comments',
     CommentViewSet,

@@ -126,17 +126,6 @@ class Review(CreatedModel):
             self.author, self.titles.name
         )
 
-    def save(self, *args, **kwargs):
-        """Проверка пользователя на наличие отзыва."""
-        if self.objects.filter(author=kwargs['author'],
-                               titles=kwargs['titles']).exists():
-            raise ValidationError('''К сожалению, можно оставить
-                                    только один отзыв''',
-                                  code='review error',
-                                  params={'author': kwargs['author']}
-                                  )
-        return super().save(*args, **kwargs)
-
 
 class Comments(CreatedModel):
     """Создается модель с комментариями."""
