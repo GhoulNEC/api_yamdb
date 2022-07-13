@@ -32,7 +32,6 @@ from .serializers import (
     TitleCreateSerializer,
     TokenSerializer,
     UserSerializer,
-    MeSerializer,
     ReviewSerializers,
     CommentSerializers,
 )
@@ -89,7 +88,6 @@ def token_post(request):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
     permission_classes = (OwnerOrAdmins,)
     filter_backends = (filters.SearchFilter,)
     filterset_fields = ('username',)
@@ -105,10 +103,13 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_patch_me(self, request):
         user = get_object_or_404(User, username=self.request.user)
         if request.method == 'GET':
-            serializer = MeSerializer(user)
+            serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == 'PATCH':
-            serializer = MeSerializer(user, data=request.data, partial=True)
+            serializer = UserSerializer(user,
+                                        data=request.data,
+                                        partial=True
+                                        )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
