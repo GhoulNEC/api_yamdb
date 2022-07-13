@@ -6,6 +6,7 @@ from django.db.models import Avg
 from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view, action
 from rest_framework.permissions import (IsAuthenticated,
@@ -13,17 +14,19 @@ from rest_framework.permissions import (IsAuthenticated,
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Categories, Genres, Titles, Review
 from users.models import User
 from api.paginator import CommentPagination
 from api.filters import TitleFilter
-from api.permissions import (AuthorAndStaffOrReadOnly,
-                             IsAdminOrReadOnly, OwnerOrAdmins)
-from api.serializers import (CategoriesSerializer,
-                             CommentsSerializer, GenresSerializer,
-                             ReviewsSerializer, SignUpSerializer,
-                             TitlesSerializer, TitlesViewSerializer,
-                             TokenSerializer, UserSerializer, MeSerializer)
+from .permissions import (AuthorAndStaffOrReadOnly,
+                          IsAdminOrReadOnly, OwnerOrAdmins)
+from .serializers import (CategoriesSerializer,
+                          CommentSerializers, GenresSerializer,
+                          ReviewSerializers, TitleSerializers,
+                          SignUpSerializer,
+                          TitlesSerializer, TitlesViewSerializer,
+                          TokenSerializer, UserSerializer, MeSerializer
+                          )
 
 
 @api_view(['POST'])
@@ -47,7 +50,7 @@ def signup_post(request):
     user.save()
     send_mail(
         'Код подверждения', confirmation_code,
-        ['admin@email.com'], (email, ), fail_silently=False
+        ['admin@email.com'], (email,), fail_silently=False
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -69,17 +72,17 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
-    permission_classes = (OwnerOrAdmins, )
-    filter_backends = (filters.SearchFilter, )
+    permission_classes = (OwnerOrAdmins,)
+    filter_backends = (filters.SearchFilter,)
     filterset_fields = ('username',)
-    search_fields = ('username', )
+    search_fields = ('username',)
     lookup_field = 'username'
 
     @action(
         methods=['get', 'patch'],
         detail=False,
         url_path='me',
-        permission_classes=(IsAuthenticated, )
+        permission_classes=(IsAuthenticated,)
     )
     def get_patch_me(self, request):
         user = get_object_or_404(User, username=self.request.user)
@@ -94,18 +97,24 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Titles.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitlesSerializer
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = PageNumberPagination
-    filterset_class = TitleFilter
+    # filterset_class = TitleFilter
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = TitleFilter
+
+    # filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitlesViewSerializer
         return TitlesSerializer
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Titles.objects.all()
+    serializer_class = TitleSerializers
 
 
 class ReviewGenreModelMixin(
@@ -124,48 +133,51 @@ class ReviewGenreModelMixin(
 
 
 class CategoriesViewSet(ReviewGenreModelMixin):
-    queryset = Category.objects.all()
+    queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
 
 
 class GenresViewSet(ReviewGenreModelMixin):
-    queryset = Genre.objects.all()
+    queryset = Genres.objects.all()
     serializer_class = GenresSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewsSerializer
+    serializer_class = ReviewSerializers
     pagination_class = CommentPagination
     permission_classes = [AuthorAndStaffOrReadOnly]
 
     def get_queryset(self):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        new_queryset = title.reviews.all()
-        return new_queryset
+        title = get_object_or_404(
+            Titles,
+            id=self.kwargs.get('title_id')
+        )
+        return title.titles.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        serializer.save(author=self.request.user, title=title)
+        title = get_object_or_404(Titles, id=self.kwargs.get('title_id'))
+        if Review.objects.filter(author=self.request.user,
+                                 pk=title.pk
+                                 ).exists():
+            raise ValidationError('Можно оставлять только один отзыв!')
+        return serializer.save(author=self.request.user, titles=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentsSerializer
+    serializer_class = CommentSerializers
     pagination_class = CommentPagination
     permission_classes = [AuthorAndStaffOrReadOnly]
 
     def get_queryset(self):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        try:
-            review = title.reviews.get(id=self.kwargs.get('review_id'))
-        except TypeError:
-            TypeError('У произведения нет такого отзыва')
-        queryset = review.comments.all()
-        return queryset
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id')
+        )
+        return review.review.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        try:
-            review = title.reviews.get(id=self.kwargs.get('review_id'))
-        except TypeError:
-            TypeError('У произведения нет такого отзыва')
-        serializer.save(author=self.request.user, review=review)
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id')
+        )
+        return serializer.save(author=self.request.user, review=review)
