@@ -16,7 +16,7 @@ app_name = 'api'
 
 router = DefaultRouter()
 router.register('users', UserViewSet)
-router.register('titles', TitleViewSet)
+router.register('titles', TitlesViewSet, basename='titles')
 router.register('genres', GenresViewSet, basename='genres')
 router.register('categories', CategoriesViewSet, basename='categories')
 router.register(

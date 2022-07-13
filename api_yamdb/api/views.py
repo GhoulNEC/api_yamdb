@@ -6,27 +6,35 @@ from django.db.models import Avg
 from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
+from rest_framework.pagination import (PageNumberPagination,
+                                       LimitOffsetPagination)
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view, action
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Categories, Genres, Titles, Review
+from reviews.models import Categories, Genres, Titles, Reiew
 from users.models import User
 from api.paginator import CommentPagination
-from api.filters import TitleFilter
-from .permissions import (AuthorAndStaffOrReadOnly,
-                          IsAdminOrReadOnly, OwnerOrAdmins)
-from .serializers import (CategoriesSerializer,
-                          CommentSerializers, GenresSerializer,
-                          ReviewSerializers, TitleSerializers,
-                          SignUpSerializer,
-                          TitlesSerializer, TitlesViewSerializer,
-                          TokenSerializer, UserSerializer, MeSerializer
-                          )
+from api.filters import TitlesFilter
+from api.permissions import (AuthorAndStaffOrReadOnly,
+                             IsAdminOrReadOnly, OwnerOrAdmins)
+from api.serializers import (CategoriesSerializer,
+                             CommentsSerializer, GenresSerializer,
+                             ReviewsSerializer, SignUpSerializer,
+                             TitlesReadOnlySerializer, TitlesCreateSerializer,
+                             TokenSerializer, UserSerializer, MeSerializer)
+
+
+class ListCreateDestroyViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
 
 
 @api_view(['POST'])
@@ -96,20 +104,33 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class CategoriesViewSet(ListCreateDestroyViewSet):
+    queryset = Categories.objects.all()
+    serializer_class = CategoriesSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+class GenresViewSet(ListCreateDestroyViewSet):
+    queryset = Genres.objects.all()
+    serializer_class = GenresSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.annotate(rating=Avg('reviews__score'))
-    serializer_class = TitlesSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    pagination_class = PageNumberPagination
-    # filterset_class = TitleFilter
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
-
-    # filterset_class = TitleFilter
+    filterset_class = TitlesFilter
 
     def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return TitlesViewSerializer
-        return TitlesSerializer
+        if self.action in ('list', 'retrieve'):
+            return TitlesReadOnlySerializer
+        return TitlesCreateSerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -130,16 +151,6 @@ class ReviewGenreModelMixin(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', 'slug')
     lookup_field = 'slug'
-
-
-class CategoriesViewSet(ReviewGenreModelMixin):
-    queryset = Categories.objects.all()
-    serializer_class = CategoriesSerializer
-
-
-class GenresViewSet(ReviewGenreModelMixin):
-    queryset = Genres.objects.all()
-    serializer_class = GenresSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
