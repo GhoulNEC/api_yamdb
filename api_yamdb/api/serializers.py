@@ -1,17 +1,23 @@
 from rest_framework import serializers
 
-from reviews.models import Categories, Genres, Titles, Review, Comments
+from reviews.models import (
+    Categorie,
+    Genre,
+    Title,
+    Review,
+    Comment
+)
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Categories
+        model = Categorie
         fields = ('name', 'slug')
 
 
 class GenresSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Genres
+        model = Genre
         fields = ('name', 'slug')
 
 
@@ -21,14 +27,14 @@ class TitlesReadOnlySerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
-        model = Titles
+        model = Title
         fields = '__all__'
 
 
 class TitleCreateSerializer(TitlesReadOnlySerializer):
-    category = serializers.SlugRelatedField(queryset=Categories.objects.all(),
+    category = serializers.SlugRelatedField(queryset=Categorie.objects.all(),
                                             slug_field='slug')
-    genre = serializers.SlugRelatedField(queryset=Genres.objects.all(),
+    genre = serializers.SlugRelatedField(queryset=Genre.objects.all(),
                                          slug_field='slug', many=True)
 
 
@@ -48,5 +54,5 @@ class CommentSerializers(serializers.ModelSerializer):
                                           )
 
     class Meta:
-        model = Comments
+        model = Comment
         exclude = ('review',)

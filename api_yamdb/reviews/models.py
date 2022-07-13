@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.db import models
 
 from core.models import CreatedModel
@@ -8,7 +7,8 @@ from .validators import year_validation, validate_score
 User = get_user_model()
 
 
-class Categories(models.Model):
+class Categorie(models.Model):
+    """Создается модель категорий."""
     name = models.CharField('Категория',
                             max_length=120,
                             db_index=True
@@ -27,7 +27,8 @@ class Categories(models.Model):
         return self.name
 
 
-class Genres(models.Model):
+class Genre(models.Model):
+    """Создается модель жанров."""
     name = models.CharField('Жанр',
                             max_length=150,
                             db_index=True
@@ -46,7 +47,8 @@ class Genres(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
+    """Создается модель произведений."""
     name = models.TextField('Название произведения',
                             max_length=150,
                             db_index=True
@@ -57,11 +59,11 @@ class Titles(models.Model):
     description = models.TextField('Описание',
                                    max_length=300
                                    )
-    genre = models.ManyToManyField(Genres,
-                                   through='TitlesGenres',
+    genre = models.ManyToManyField(Genre,
+                                   through='TitlesGenre',
                                    blank=True
                                    )
-    category = models.ForeignKey(Categories,
+    category = models.ForeignKey(Categorie,
                                  on_delete=models.SET_NULL,
                                  related_name='titles',
                                  blank=True,
@@ -77,12 +79,13 @@ class Titles(models.Model):
         return self.name
 
 
-class TitlesGenres(models.Model):
-    title = models.ForeignKey(Titles,
+class TitlesGenre(models.Model):
+    """Смежная модель для жанров и произведений."""
+    title = models.ForeignKey(Title,
                               related_name='genres',
                               on_delete=models.CASCADE
                               )
-    genre = models.ForeignKey(Genres,
+    genre = models.ForeignKey(Genre,
                               related_name='title',
                               on_delete=models.SET_NULL,
                               null=True,
@@ -110,7 +113,7 @@ class Review(CreatedModel):
                                on_delete=models.CASCADE,
                                verbose_name='Автор'
                                )
-    titles = models.ForeignKey(Titles,
+    titles = models.ForeignKey(Title,
                                related_name='titles',
                                on_delete=models.CASCADE,
                                verbose_name='Произведение'
@@ -127,7 +130,7 @@ class Review(CreatedModel):
         )
 
 
-class Comments(CreatedModel):
+class Comment(CreatedModel):
     """Создается модель с комментариями."""
     text = models.TextField('Комментарий',
                             help_text='Введите комментарий'

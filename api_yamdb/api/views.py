@@ -15,17 +15,28 @@ from rest_framework.permissions import (IsAuthenticated,
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Categories, Genres, Titles, Reiew
+from reviews.models import Categorie, Genre, Title, Review
 from users.models import User
-from api.paginator import CommentPagination
-from api.filters import TitlesFilter
-from api.permissions import (AuthorAndStaffOrReadOnly,
-                             IsAdminOrReadOnly, OwnerOrAdmins)
-from api.serializers import (CategoriesSerializer,
-                             CommentsSerializer, GenresSerializer,
-                             ReviewsSerializer, SignUpSerializer,
-                             TitlesReadOnlySerializer, TitlesCreateSerializer,
-                             TokenSerializer, UserSerializer, MeSerializer)
+from .paginator import CommentPagination
+from .filters import TitlesFilter
+from .permissions import (
+    AuthorAndStaffOrReadOnly,
+    IsAdminOrReadOnly,
+    OwnerOrAdmins
+)
+from .serializers import (
+    CategoriesSerializer,
+    CommentsSerializer,
+    GenresSerializer,
+    ReviewSerializers,
+    SignUpSerializer,
+    TitlesReadOnlySerializer,
+    TitlesCreateSerializer,
+    TokenSerializer,
+    UserSerializer,
+    MeSerializer,
+    CommentSerializers
+)
 
 
 class ListCreateDestroyViewSet(
@@ -105,7 +116,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class CategoriesViewSet(ListCreateDestroyViewSet):
-    queryset = Categories.objects.all()
+    queryset = Categorie.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -113,7 +124,7 @@ class CategoriesViewSet(ListCreateDestroyViewSet):
 
 
 class GenresViewSet(ListCreateDestroyViewSet):
-    queryset = Genres.objects.all()
+    queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -121,7 +132,7 @@ class GenresViewSet(ListCreateDestroyViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
@@ -133,8 +144,12 @@ class TitlesViewSet(viewsets.ModelViewSet):
         return TitlesCreateSerializer
 
 
+class TitleSerializers:
+    pass
+
+
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     serializer_class = TitleSerializers
 
 
@@ -160,13 +175,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title = get_object_or_404(
-            Titles,
+            Title,
             id=self.kwargs.get('title_id')
         )
         return title.titles.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Titles, id=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         if Review.objects.filter(author=self.request.user,
                                  pk=title.pk
                                  ).exists():
