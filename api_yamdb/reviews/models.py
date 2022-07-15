@@ -114,11 +114,11 @@ class Review(CreatedModel):
                                on_delete=models.CASCADE,
                                verbose_name='Автор'
                                )
-    titles = models.ForeignKey(Title,
-                               related_name='titles',
-                               on_delete=models.CASCADE,
-                               verbose_name='Произведение'
-                               )
+    title = models.ForeignKey(Title,
+                              related_name='titles',
+                              on_delete=models.CASCADE,
+                              verbose_name='Произведение'
+                              )
 
     class Meta:
         ordering = ('pk',)
