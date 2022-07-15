@@ -62,6 +62,6 @@ python3 manage.py runserver
 ```
 ***
 ## Авторы
-* Вячеслав Наприенко
-* Максим Игнатов
-* Роман Евстафьев
+* [Вячеслав Наприенко](https://github.com/Hellon048)
+* [Максим Игнатов](https://github.com/Maxon57)
+* [Роман Евстафьев](https://github.com/GhoulNEC)
