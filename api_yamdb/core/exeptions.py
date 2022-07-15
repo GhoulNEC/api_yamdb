@@ -1,3 +1,3 @@
 class Fill_DBException(Exception):
-    """Ошибка для вывода Бота."""
+    """Ошибка импорта csv файла в модель."""
     pass
