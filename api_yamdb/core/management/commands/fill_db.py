@@ -38,26 +38,45 @@ class Command(BaseCommand):
                             )
 
     @classmethod
-    def get_csv_file(cls, filename):
+    def get_csv_file(cls, filename: str) -> str:
+        """
+        Сосоставлет путь к файлу.
+
+        :param filename: Ожидается имя файла
+        :return: Выстроенный путь к файлу
+        """
         name_file = filename + '.csv'
         path = os.path.join(BASE_DIR, 'static', 'data', name_file)
         return path
 
     @classmethod
-    def get_obj_models(cls, model):
-        """Почему отправляется не та строка...."""
+    def get_obj_models(cls, model: str):
+        """
+        Ищет с помощью библиотеки inspect классы в модуле reviews.models.
+        Возвращает класс
+        :param model: Ожидается имя модели
+        :return: Возвращает класс
+        """
         classes = [obj for obj in inspect.getmembers(models, inspect.isclass)]
         try:
             for name, obj in classes:
                 if name == model.title():
                     return obj
         except AttributeError:
-            raise Fill_DBException(
-                f'Модель {model} отсутствует в модуле {models}'
-            )
+            raise
 
     @classmethod
-    def chek_field_model(cls, obj, item_dict):
+    def chek_field_model(cls, obj, item_dict: dict) -> dict:
+        """Проверяет поля модели. Если тип данных поля соответствуют
+        значению атрибутов класса ChekFieldModel, то происходит преобразование
+        значений словаря item_dict в соответствующие типы данных.
+        Для полей типа ForeignKey / ManyToManyField происходит преобразование
+        значений item_dict в экземпляры класса модели, с которой
+        связан по ключу item_dict посредством related_model.
+        :param obj: Ожидается класс модели
+        :param item_dict: Ожидается словарь из одной строки csv файла
+        :return: Возвращает преобразованный словарь
+        """
         obj_data = {}
         try:
             for item in item_dict:
