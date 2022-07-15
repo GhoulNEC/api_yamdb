@@ -20,7 +20,7 @@ class Command(BaseCommand):
     5) Последующие модели.
     Если не учесть данную последовательность, то возникнет ошибка,
     т.к. все модели с полями ForeignKey / ManyToManyField ожидают
-    экземпляр класса связующей ею моделью. 
+    экземпляр класса связующей ею моделью.
     
     Просьба - учесть данный факт!
     '''
@@ -120,6 +120,9 @@ class Command(BaseCommand):
                     obj.objects.get_or_create(
                         **self.chek_field_model(obj, dict_data)
                     )
+                self.stdout.write(
+                    f'Данные занесены в модель {obj.__name__}'
+                )
         except FileNotFoundError:
             print(f'Файла с путем {file_path} не существует!')
         except Fill_DBException as err:
