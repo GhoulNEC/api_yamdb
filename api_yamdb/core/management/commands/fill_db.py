@@ -16,7 +16,7 @@ class Command(BaseCommand):
     1) Первым делом заполнить модель User;
     2) Заполнить модели Category / Genre;
     3) Заполнить модель Title;
-    4) Заполнить модель GenreTitle;
+    4) Заполнить модель TitleGenre;
     5) Последующие модели.
     Если не учесть данную последовательность, то возникнет ошибка,
     т.к. все модели с полями ForeignKey / ManyToManyField ожидают
@@ -60,7 +60,7 @@ class Command(BaseCommand):
         classes = [obj for obj in inspect.getmembers(models, inspect.isclass)]
         try:
             for name, obj in classes:
-                if name == model.title():
+                if name == model:
                     return obj
         except AttributeError:
             raise
