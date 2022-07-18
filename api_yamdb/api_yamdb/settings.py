@@ -16,9 +16,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'users.apps.UsersConfig',
-    'api.apps.ApiConfig',
-    'reviews.apps.ReviewsConfig',
+    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -28,6 +26,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'reviews',
+    'api',
     'core',
 ]
 
