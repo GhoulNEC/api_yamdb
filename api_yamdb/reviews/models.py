@@ -10,6 +10,9 @@ class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
+    class Meta:
+        ordering = ['pk']
+
     def __str__(self):
         return self.slug
 
@@ -19,6 +22,9 @@ class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
+    class Meta:
+        ordering = ['pk']
+
     def __str__(self) -> str:
         return self.slug
 
@@ -26,7 +32,7 @@ class Category(models.Model):
 class Title(models.Model):
     """Модель Произведение, базовая модель"""
 
-    name = models.TextField()
+    name = models.CharField(max_length=250)
     year = models.IntegerField(
         'Год релиза',
         validators=[validate_year],
@@ -50,6 +56,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        ordering = ['name']
 
     def __str__(self) -> str:
         return self.name
@@ -96,6 +103,9 @@ class Review(models.Model):
                 fields=['author', 'title'], name="unique_review")
         ]
 
+    def __str__(self):
+        return self.title
+
 
 class Comment(models.Model):
     review = models.ForeignKey(
@@ -113,7 +123,10 @@ class Comment(models.Model):
         auto_now_add=True,
         db_index=True
     )
-    text = models.TextField()
+    text = models.TextField('Введите текст комментария')
+
+    class Meta:
+        ordering = ['-pub_date']
 
     def __str__(self):
-        return self.author
+        return self.text
