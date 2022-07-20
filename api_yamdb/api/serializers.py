@@ -1,4 +1,4 @@
-import datetime as dt
+from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -9,6 +9,7 @@ from reviews.models import (
     Review,
     Title,
 )
+from reviews.validators import validate_year
 from users.models import User
 
 
@@ -16,8 +17,8 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254, required=True)
     username = serializers.CharField(max_length=150, required=True)
 
-    def validate(self, data):
-        if data['username'] == 'me':
+    def validate_username(self, data):
+        if data.lower() == 'me':
             raise serializers.ValidationError('Нельзя использовать логин me')
         return data
 
@@ -28,9 +29,6 @@ class SignUpSerializer(serializers.Serializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150, required=True)
     confirmation_code = serializers.CharField(required=True)
-
-    class Meta:
-        fields = ('username', 'confirmation_code')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -95,9 +93,7 @@ class TitlesSerializer(serializers.ModelSerializer):
         model = Title
 
     def validate_year(self, value):
-        current_year = dt.date.today().year
-        if value > current_year:
-            raise serializers.ValidationError('Проверьте год')
+        validate_year(value)
         return value
 
 
@@ -156,8 +152,8 @@ class ReviewsSerializer(serializers.ModelSerializer):
         return data
 
     def validate_score(self, value):
-        if 0 >= value >= 10:
-            raise serializers.ValidationError('Проверьте оценку')
+        MaxValueValidator(value)
+        MinValueValidator(value)
         return value
 
 
