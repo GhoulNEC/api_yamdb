@@ -4,24 +4,24 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django.db import IntegrityError
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, action
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review
 from users.models import User
 from api.paginator import CommentPagination
 from api.filters import TitleFilter
-from api.permissions import (ModeratorReadOnly,
-                             IsAdminOrReadOnly, PermissionAdmins)
+from api.permissions import (AuthorAndModeratorReadOnly,
+                             IsAdminOrReadOnly, IsAdmin)
 from api.serializers import (CategoriesSerializer,
                              CommentsSerializer, GenresSerializer,
                              ReviewsSerializer, SignUpSerializer,
                              TitlesSerializer, TitlesViewSerializer,
                              TokenSerializer, UserSerializer, MeSerializer)
+from .mixins import ReviewGenreModelMixin
 
 
 @api_view(['POST'])
@@ -67,17 +67,17 @@ def token_post(request):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
-    permission_classes = (PermissionAdmins, )
-    filter_backends = (filters.SearchFilter, )
+    permission_classes = (IsAdmin,)
+    filter_backends = (filters.SearchFilter,)
     filterset_fields = ('username',)
-    search_fields = ('username', )
+    search_fields = ('username',)
     lookup_field = 'username'
 
     @action(
         methods=['get', 'patch'],
         detail=False,
         url_path='me',
-        permission_classes=(IsAuthenticated, )
+        permission_classes=(IsAuthenticated,)
     )
     def get_patch_me(self, request):
         user = get_object_or_404(User, username=self.request.user)
@@ -104,21 +104,6 @@ class TitlesViewSet(viewsets.ModelViewSet):
         return TitlesSerializer
 
 
-class ReviewGenreModelMixin(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
-    permission_classes = [
-        IsAuthenticatedOrReadOnly,
-        IsAdminOrReadOnly
-    ]
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', 'slug')
-    lookup_field = 'slug'
-
-
 class CategoriesViewSet(ReviewGenreModelMixin):
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
@@ -132,7 +117,7 @@ class GenresViewSet(ReviewGenreModelMixin):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewsSerializer
     pagination_class = CommentPagination
-    permission_classes = [ModeratorReadOnly]
+    permission_classes = [AuthorAndModeratorReadOnly]
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -147,13 +132,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     pagination_class = CommentPagination
-    permission_classes = [ModeratorReadOnly]
-
-    def get_title(self):
-        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+    permission_classes = [AuthorAndModeratorReadOnly]
 
     def get_review(self):
-        return self.get_title().reviews.get(id=self.kwargs.get('review_id'))
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
 
     def get_queryset(self):
         return self.get_review().comments.all()

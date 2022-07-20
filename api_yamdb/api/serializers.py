@@ -133,6 +133,10 @@ class ReviewsSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
         read_only=True
     )
+    score = serializers.IntegerField(validators=[
+        MaxValueValidator(10, message='Оценка не может быть выше "10"'),
+        MinValueValidator(1, message='Оценка не может быть ниже "1"')
+    ])
 
     class Meta:
         fields = '__all__'
@@ -150,11 +154,6 @@ class ReviewsSerializer(serializers.ModelSerializer):
                     'Нельзя оставить отзыв на одно произведение дважды'
                 )
         return data
-
-    def validate_score(self, value):
-        MaxValueValidator(value)
-        MinValueValidator(value)
-        return value
 
 
 class CommentsSerializer(serializers.ModelSerializer):

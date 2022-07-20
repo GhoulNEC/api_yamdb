@@ -22,9 +22,7 @@ class GenreCategoryBase(models.Model):
 
 class Genre(GenreCategoryBase):
     """Модель жанры, многое к многому"""
-
-    class Meta(GenreCategoryBase.Meta):
-        default_related_name = 'genres'
+    pass
 
 
 class Category(GenreCategoryBase):
@@ -33,7 +31,6 @@ class Category(GenreCategoryBase):
     class Meta(GenreCategoryBase.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        default_related_name = 'categories'
 
 
 class Title(models.Model):

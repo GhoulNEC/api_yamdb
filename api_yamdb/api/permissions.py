@@ -2,7 +2,7 @@ from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
-class PermissionAdmins(permissions.BasePermission):
+class IsAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return (
@@ -28,7 +28,7 @@ class IsAdminOrReadOnly(BasePermission):
         )
 
 
-class ModeratorReadOnly(BasePermission):
+class AuthorAndModeratorReadOnly(BasePermission):
     def has_permission(self, request, view):
         return (
             request.method in SAFE_METHODS
